@@ -8,7 +8,7 @@ export function solvePhasicDial() {
   const output = document.getElementById('dialOutput');
 
   if (!moduli || !operations || !initialState) {
-    output.innerHTML = '<div class="error">Please fill in all three fields</div>';
+    output.innerHTML = '<div class="bg-washed-yellow dark-red pa3 br2 mv2">Please fill in all three fields</div>';
     return;
   }
 
@@ -24,20 +24,20 @@ export function solvePhasicDial() {
         const result = solvePhasicDialPuzzle(moduli, operations, initialState);
 
         if (result.success) {
-          let resultText = `<div class="success">Solution found!</div>`;
+          let resultText = `<div class="bg-washed-green dark-green pa3 br2 mv2">Solution found!</div>`;
           resultText += `Steps: ${result.steps}\n`;
           resultText += `Solution: ${result.solution}\n`;
           resultText += `Time: ${result.time}ms`;
           output.innerHTML = resultText;
         } else {
-          output.innerHTML = `<div class="error">No solution found. Explored ${result.explored} states in ${result.time}ms.</div>`;
+          output.innerHTML = `<div class="bg-washed-yellow dark-red pa3 br2 mv2">No solution found. Explored ${result.explored} states in ${result.time}ms.</div>`;
         }
       } catch (error) {
-        output.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+        output.innerHTML = `<div class="bg-washed-yellow dark-red pa3 br2 mv2">Error: ${error.message}</div>`;
       }
     }, 10);
   } catch (error) {
-    output.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+    output.innerHTML = `<div class="bg-washed-yellow dark-red pa3 br2 mv2">Error: ${error.message}</div>`;
   }
 }
 
@@ -57,7 +57,7 @@ export function solveCuboidPuzzleUI() {
   const output = document.getElementById('cuboidOutput');
 
   if (!input) {
-    output.innerHTML = '<div class="error">Please enter a grid layout</div>';
+    output.innerHTML = '<div class="bg-washed-yellow dark-red pa3 br2 mv2">Please enter a grid layout</div>';
     return;
   }
 
@@ -69,21 +69,21 @@ export function solveCuboidPuzzleUI() {
         const result = solveCuboidPuzzle(input);
 
         if (result.success) {
-          let resultText = `<div class="success">Solution found!</div>`;
+          let resultText = `<div class="bg-washed-green dark-green pa3 br2 mv2">Solution found!</div>`;
           resultText += `Steps: ${result.steps}\n`;
           resultText += `Solution: ${result.solution}\n`;
           resultText += `States explored: ${result.statesExplored}\n`;
           resultText += `Time: ${result.time}ms`;
           output.innerHTML = resultText;
         } else {
-          output.innerHTML = `<div class="error">No solution found. Explored ${result.statesExplored} states in ${result.time}ms.</div>`;
+          output.innerHTML = `<div class="bg-washed-yellow dark-red pa3 br2 mv2">No solution found. Explored ${result.statesExplored} states in ${result.time}ms.</div>`;
         }
       } catch (error) {
-        output.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+        output.innerHTML = `<div class="bg-washed-yellow dark-red pa3 br2 mv2">Error: ${error.message}</div>`;
       }
     }, 10);
   } catch (error) {
-    output.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+    output.innerHTML = `<div class="bg-washed-yellow dark-red pa3 br2 mv2">Error: ${error.message}</div>`;
   }
 }
 
