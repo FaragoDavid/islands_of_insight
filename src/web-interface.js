@@ -2,6 +2,7 @@ import { solvePhasicDialPuzzle } from './solvers/phasic-dial-solver.js';
 import { solveCuboidPuzzle } from './solvers/rolling-cuboid-solver.js';
 
 let dialSolverTimeout = null;
+let cuboidSolverTimeout = null;
 
 export function solvePhasicDialAuto() {
   if (dialSolverTimeout) {
@@ -13,6 +14,15 @@ export function solvePhasicDialAuto() {
   }, 500);
 }
 
+export function solveCuboidPuzzleAuto() {
+  if (cuboidSolverTimeout) {
+    clearTimeout(cuboidSolverTimeout);
+  }
+
+  cuboidSolverTimeout = setTimeout(() => {
+    solveCuboidPuzzleUI();
+  }, 1000);
+}
 export function solvePhasicDial() {
   const moduli = document.getElementById('dialModuli').value.trim();
   const operations = document.getElementById('dialOperations').value.trim();
@@ -76,12 +86,18 @@ export function solveCuboidPuzzleUI() {
   const output = document.getElementById('cuboidOutput');
 
   if (!input) {
-    output.innerHTML = '<div class="bg-washed-yellow dark-red pa3 br2 mv2">Please enter a grid layout</div>';
+    output.innerHTML = 'Enter grid layout to solve...';
+    return;
+  }
+
+  if (!/^[1-9hxg\s\n]+$/.test(input)) {
+    output.innerHTML =
+      '<div class="bg-washed-yellow dark-red pa3 br2 mv2">Grid must only contain digits 1-9, h, x, g, spaces, and newlines</div>';
     return;
   }
 
   try {
-    output.innerHTML = '<div>Solving puzzle...</div>';
+    output.innerHTML = '<div class="gray i">Solving puzzle...</div>';
 
     setTimeout(() => {
       try {
@@ -125,9 +141,18 @@ export function initializeUI() {
     }
   });
 
+  const gridInput = document.getElementById('gridInput');
+  if (gridInput) {
+    gridInput.addEventListener('input', solveCuboidPuzzleAuto);
+    gridInput.addEventListener('paste', () => {
+      setTimeout(solveCuboidPuzzleAuto, 10);
+    });
+  }
+
   window.solvePhasicDial = solvePhasicDial;
   window.solvePhasicDialAuto = solvePhasicDialAuto;
   window.solveCuboidPuzzleUI = solveCuboidPuzzleUI;
+  window.solveCuboidPuzzleAuto = solveCuboidPuzzleAuto;
 }
 
 if (typeof window !== 'undefined') {
