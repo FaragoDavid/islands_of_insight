@@ -68,7 +68,7 @@ export function solvePhasicDial() {
         const result = solvePhasicDialPuzzle(moduli, operations, initialState);
 
         if (result.success) {
-          output.textContent = result.solution;
+          output.innerHTML = result.solution.join('<br>');
         } else {
           output.innerHTML = `<div class="bg-washed-yellow dark-red pa3 br2 mv2">No solution found.</div>`;
         }

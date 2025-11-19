@@ -70,7 +70,7 @@ export function solvePhasicDialPuzzle(dialModuli, rawOperations, initialState) {
     };
   }
 
-  let solutionOutput = '';
+  const moves = [];
   let currentMoveType = '';
   let moveCount = 0;
 
@@ -80,7 +80,7 @@ export function solvePhasicDialPuzzle(dialModuli, rawOperations, initialState) {
       moveCount++;
     } else {
       if (moveCount > 0) {
-        solutionOutput += `Move ${currentMoveType}, ${moveCount} times\n`;
+        moves.push(`Move ${currentMoveType}, ${moveCount} times`);
       }
       currentMoveType = moveIndex;
       moveCount = 1;
@@ -88,11 +88,11 @@ export function solvePhasicDialPuzzle(dialModuli, rawOperations, initialState) {
   });
 
   if (moveCount > 0) {
-    solutionOutput += `Move ${currentMoveType}, ${moveCount} times\n`;
+    moves.push(`Move ${currentMoveType}, ${moveCount} times`);
   }
 
   return {
     success: true,
-    solution: solutionOutput.trim(),
+    solution: moves,
   };
 }
