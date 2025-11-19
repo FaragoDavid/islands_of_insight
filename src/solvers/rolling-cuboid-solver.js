@@ -234,10 +234,13 @@ export function solveCuboidPuzzle(gridInput) {
         let hasCollision = false;
         for (const otherCuboid of otherCuboids) {
           const otherCuboidSet = convertCellsToCoordinateSet(otherCuboid.cells);
-          if (newFootprintSet.intersection(otherCuboidSet).size > 0) {
-            hasCollision = true;
-            break;
+          for (const coord of newFootprintSet) {
+            if (otherCuboidSet.has(coord)) {
+              hasCollision = true;
+              break;
+            }
           }
+          if (hasCollision) break;
         }
         if (hasCollision) continue;
 
