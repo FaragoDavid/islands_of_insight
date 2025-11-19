@@ -1,0 +1,31 @@
+{
+  "name": "islands-of-insight-solvers",
+  "version": "1.0.0",
+  "description": "Solvers for Islands of Insight puzzles including phasic dial and rolling cuboid puzzles",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "node --test",
+    "test:watch": "node --test --watch",
+    "dev": "node src/index.js",
+    "build": "echo 'No build step needed for static site'",
+    "serve": "python3 -m http.server 8080"
+  },
+  "keywords": [
+    "puzzle",
+    "solver",
+    "game",
+    "islands-of-insight",
+    "phasic-dial",
+    "rolling-cuboid"
+  ],
+  "author": "FaragoDavid",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FaragoDavid/islands_of_insight.git"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

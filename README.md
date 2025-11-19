@@ -1,102 +1,141 @@
 # Islands of Insight Solvers
 
-A collection of puzzle solvers for the Islands of Insight game, featuring:
+A Node.js project with puzzle solvers for the Islands of Insight game, featuring:
 
 - **Phasic Dial Solver**: Solve phasic dial puzzles by finding sequences of moves to reset all dials
 - **Rolling Cuboid Solver**: Find optimal moves to roll cuboids and visit all special tiles
 
 ## Live Demo
 
-Visit the live solver at: `https://FaragoDavid.github.io/islands_of_insight`
+Visit the live solver at: https://faragodavid.github.io/islands_of_insight
 
-## Local Development
-
-To run the solvers locally:
-
-1. Clone this repository
-2. Open `index.html` in your web browser
-3. Or use a local server:
-   ```bash
-   python -m http.server 8000
-   # Then visit http://localhost:8000
-   ```
-
-## Command Line Usage
-
-### Phasic Dial Solver
+## Installation
 
 ```bash
-node phasig-dial-solver.js
+# Clone the repository
+git clone https://github.com/FaragoDavid/islands_of_insight.git
+cd islands_of_insight
+
+# Install dependencies (Node.js 18+ required)
+npm install
 ```
 
-### Rolling Cuboid Solver
+## Usage
+
+### Command Line
 
 ```bash
-node rolling-cuboid-solver.js
+# Run the demo solvers
+npm run dev
+
+# Run tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Serve the web interface locally
+npm run serve
 ```
 
-## GitHub Pages Setup
+### Web Interface
 
-To deploy this to GitHub Pages:
+Open `index.html` in a modern web browser, or use the local server:
 
-1. **Fork or clone this repository** to your GitHub account
+```bash
+npm run serve
+# Then visit http://localhost:8080
+```
 
-2. **Enable GitHub Pages**:
+### As a Module
 
-   - Go to your repository settings
-   - Scroll down to "Pages" section
-   - Under "Source", select "GitHub Actions"
+```javascript
+import { solvePhasicDialPuzzle, solveCuboidPuzzle } from './src/index.js';
 
-3. **Push to main branch**:
+// Solve a phasic dial puzzle
+const dialResult = solvePhasicDialPuzzle('4656', '000112010310', '0440');
+console.log(dialResult);
 
-   - The GitHub Actions workflow will automatically deploy
-   - Your site will be available at `https://yourusername.github.io/repository-name`
+// Solve a cuboid puzzle
+const grid = `1hh\n1hh\n1hh`;
+const cuboidResult = solveCuboidPuzzle(grid);
+console.log(cuboidResult);
+```
 
-4. **Custom domain** (optional):
-   - In repository settings > Pages, add your custom domain
-   - Create a `CNAME` file in the root directory with your domain
-
-## File Structure
+## Project Structure
 
 ```
-├── index.html                 # Main web interface
-├── phasig-dial-solver.js     # Phasic dial puzzle solver
-├── rolling-cuboid-solver.js  # Rolling cuboid puzzle solver
-├── web-interface.js          # Web UI functionality
-├── .github/workflows/        # GitHub Actions deployment
-└── README.md                 # This file
+├── src/
+│   ├── index.js                           # Main entry point
+│   ├── web-interface.js                   # Web UI functionality
+│   └── solvers/
+│       ├── phasic-dial-solver.js         # Phasic dial puzzle solver
+│       └── rolling-cuboid-solver.js      # Rolling cuboid puzzle solver
+├── test/                                 # Test files
+├── public/                              # Static web assets
+├── package.json                         # Node.js project configuration
+├── index.html                          # Main web interface (root)
+└── .github/workflows/                  # GitHub Actions deployment
 ```
 
 ## Puzzle Formats
 
 ### Phasic Dial Puzzle
 
-Format: `moduli|operations|initial_state`
+**Input Format:**
 
-Example: `4656|000112010310|0440`
+- `dialModuli`: String of digits representing each dial's modulus (e.g., "4656")
+- `operations`: String of operations grouped by dial count (e.g., "000112010310")
+- `initialState`: String representing initial dial positions (e.g., "0440")
 
-- 4 dials with moduli [4,6,5,6]
-- Operations string defines move sequences
-- Initial state: 0440
+**Example:**
+
+```javascript
+solvePhasicDialPuzzle('4656', '000112010310', '0440');
+```
 
 ### Rolling Cuboid Puzzle
 
-Grid format using characters:
+**Grid Format:**
 
-- `1-9`: Cuboid height
+- `1-9`: Cuboid height at that position
 - `h`: Special tiles that must be visited
-- `x`: Blocked tiles
-- `g`: Goal positions (optional)
-- ` ` (space): Empty tiles
+- `x`: Blocked/impassable tiles
+- `g`: Goal positions where cuboids should end (optional)
+- ` ` (space): Empty/passable tiles
 
-## Contributing
+**Example:**
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test the solvers
-5. Submit a pull request
+```
+1xxxhhxxx
+1xxxhhxxx
+1xxxhhxxx
+hhhhhhhhh
+```
+
+## Testing
+
+The project uses Node.js built-in test runner:
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode during development
+npm run test:watch
+```
+
+## Development
+
+This project uses ES modules and modern JavaScript features. Requirements:
+
+- Node.js 18+
+- Modern web browser with ES module support
+
+## Deployment
+
+The project auto-deploys to GitHub Pages via GitHub Actions when pushing to the main branch.
 
 ## License
 
-This project is open source. Feel free to use and modify as needed.
+MIT License - feel free to use and modify as needed.

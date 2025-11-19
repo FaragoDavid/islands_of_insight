@@ -1,6 +1,7 @@
-// Web interface for Islands of Insight solvers
+import { solvePhasicDialPuzzle } from './solvers/phasic-dial-solver.js';
+import { solveCuboidPuzzle } from './solvers/rolling-cuboid-solver.js';
 
-function solvePhasicDial() {
+export function solvePhasicDial() {
   const moduli = document.getElementById('dialModuli').value.trim();
   const operations = document.getElementById('dialOperations').value.trim();
   const initialState = document.getElementById('dialInitialState').value.trim();
@@ -12,14 +13,12 @@ function solvePhasicDial() {
   }
 
   try {
-    // Validate input format
     if (moduli.length !== initialState.length) {
       throw new Error('Number of moduli must match number of initial state values');
     }
 
     output.innerHTML = '<div>Solving puzzle...</div>';
 
-    // Use a timeout to allow the UI to update
     setTimeout(() => {
       try {
         const result = solvePhasicDialPuzzle(moduli, operations, initialState);
@@ -42,18 +41,18 @@ function solvePhasicDial() {
   }
 }
 
-function clearDialOutput() {
+export function clearDialOutput() {
   document.getElementById('dialOutput').innerHTML = 'Ready to solve phasic dial puzzles...';
 }
 
-function clearDialInputs() {
+export function clearDialInputs() {
   document.getElementById('dialModuli').value = '';
   document.getElementById('dialOperations').value = '';
   document.getElementById('dialInitialState').value = '';
   clearDialOutput();
 }
 
-function solveCuboidPuzzleUI() {
+export function solveCuboidPuzzleUI() {
   const input = document.getElementById('gridInput').value.trim();
   const output = document.getElementById('cuboidOutput');
 
@@ -65,7 +64,6 @@ function solveCuboidPuzzleUI() {
   try {
     output.innerHTML = '<div>Solving puzzle...</div>';
 
-    // Use a timeout to allow the UI to update
     setTimeout(() => {
       try {
         const result = solveCuboidPuzzle(input);
@@ -89,37 +87,40 @@ function solveCuboidPuzzleUI() {
   }
 }
 
-function clearCuboidOutput() {
+export function clearCuboidOutput() {
   document.getElementById('cuboidOutput').innerHTML = 'Ready to solve cuboid puzzles...';
 }
 
-// Make sure the solvers are adapted for web use
-if (typeof module === 'undefined') {
-  // We're in a browser environment, not Node.js
+export function initializeUI() {
+  const dialInputs = ['dialModuli', 'dialOperations', 'dialInitialState'];
+
+  dialInputs.forEach((inputId, index) => {
+    const input = document.getElementById(inputId);
+    if (input) {
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          const nextIndex = (index + 1) % dialInputs.length;
+          const nextInput = document.getElementById(dialInputs[nextIndex]);
+          if (nextInput) {
+            nextInput.focus();
+          }
+        }
+      });
+    }
+  });
+
   window.solvePhasicDial = solvePhasicDial;
   window.clearDialOutput = clearDialOutput;
   window.clearDialInputs = clearDialInputs;
   window.solveCuboidPuzzleUI = solveCuboidPuzzleUI;
   window.clearCuboidOutput = clearCuboidOutput;
+}
 
-  // Set up tab cycling for phasic dial inputs
-  document.addEventListener('DOMContentLoaded', function () {
-    const dialInputs = ['dialModuli', 'dialOperations', 'dialInitialState'];
-
-    dialInputs.forEach((inputId, index) => {
-      const input = document.getElementById(inputId);
-      if (input) {
-        input.addEventListener('keydown', function (e) {
-          if (e.key === 'Tab') {
-            e.preventDefault();
-            const nextIndex = (index + 1) % dialInputs.length;
-            const nextInput = document.getElementById(dialInputs[nextIndex]);
-            if (nextInput) {
-              nextInput.focus();
-            }
-          }
-        });
-      }
-    });
-  });
+if (typeof window !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeUI);
+  } else {
+    initializeUI();
+  }
 }
