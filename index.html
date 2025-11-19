@@ -7,51 +7,50 @@
     <link rel="stylesheet" href="https://unpkg.com/tachyons@4.12.0/css/tachyons.min.css" />
     <link rel="stylesheet" href="public/styles.css" />
   </head>
-  <body class="bg-light-gray sans-serif">
-    <div class="mw-none w-90 center pa4 bg-white br3 shadow-2 ma3">
+  <body class="sans-serif" style="background: #a2790d; min-height: 100vh">
+    <div class="mw-none w-90 center pa4 br3 shadow-2 ma3" style="background: #b48811">
       <h1 class="dark-blue tc mb4 f2 fw6">Islands of Insight Solvers</h1>
 
-      <div class="mv4 pa3 ba b--light-gray br2 bg-near-white">
+      <div class="mv4 pa3 br2" style="background: #bb9b49">
         <h2 class="dark-gray mb3 f3 fw6">Phasic Dial Solver</h2>
 
-        <div class="flex flex-wrap gap3 mv3 pa3 bg-white br2">
+        <div class="flex flex-wrap gap3 mv3 pa3 br2" style="background: #ebd197">
           <div class="flex-auto ma2">
             <label for="dialModuli" class="db mb2 fw6 mid-gray">Dial Moduli</label>
-            <input type="text" id="dialModuli" tabindex="1" class="w-100 pa3 ba b--light-gray br2 courier f5" />
+            <input type="text" id="dialModuli" tabindex="1" class="w-100 pa3 br2 courier f5" />
           </div>
 
           <div class="flex-auto ma2">
             <label for="dialOperations" class="db mb2 fw6 mid-gray">Operations</label>
-            <input type="text" id="dialOperations" tabindex="2" class="w-100 pa3 ba b--light-gray br2 courier f5" />
+            <input type="text" id="dialOperations" tabindex="2" class="w-100 pa3 br2 courier f5" />
           </div>
 
           <div class="flex-auto ma2">
             <label for="dialInitialState" class="db mb2 fw6 mid-gray">Initial State</label>
-            <input type="text" id="dialInitialState" tabindex="3" class="w-100 pa3 ba b--light-gray br2 courier f5" />
+            <input type="text" id="dialInitialState" tabindex="3" class="w-100 pa3 br2 courier f5" />
           </div>
         </div>
 
-        <div id="dialOutput" class="mt3 pa3 bg-white ba b--light-gray br2 min-h-4 courier pre-wrap dark-blue">
+        <div id="dialOutput" class="mt3 pa3 br2 min-h-4 courier pre-wrap dark-blue" style="background: #ebd197">
           Enter dial moduli, operations, and initial state to solve...
         </div>
       </div>
 
-      <div class="mv4 pa3 ba b--light-gray br2 bg-near-white">
+      <div class="mv4 pa3 br2" style="background: #bb9b49">
         <h2 class="dark-gray mb3 f3 fw6">Rolling Cuboid Solver</h2>
-        <p class="gray mb3">Solve rolling cuboid puzzles by finding moves to visit all special tiles.</p>
 
         <div class="mv3">
-          <label for="gridInput" class="db mb2 fw6 mid-gray">Grid Layout:</label>
+          <label for="gridInput" class="db mb2 fw6">Grid Layout:</label>
           <textarea
             id="gridInput"
-            class="w-100 pa3 ba b--light-gray br2 courier f5 lh-copy"
+            class="w-100 pa3 br2 courier f5 lh-copy"
             style="min-height: 150px; resize: vertical"
             tabindex="-1"
           ></textarea>
-          <div class="gray i f6 mt2">Legend: 1-9=cuboid height, h=special tiles to visit, x=blocked, (space)=empty, g=goal positions</div>
+          <div class="i f6 mt2">Legend: 1-9=cuboid height, h=special tiles to visit, x=blocked, (space)=empty, g=goal positions</div>
         </div>
 
-        <div id="cuboidOutput" class="mt3 pa3 bg-white ba b--light-gray br2 min-h-4 courier pre-wrap dark-blue">
+        <div id="cuboidOutput" class="mt3 pa3 br2 min-h-4 courier pre-wrap dark-blue" style="background: #ebd197">
           Enter grid layout to solve...
         </div>
       </div>
