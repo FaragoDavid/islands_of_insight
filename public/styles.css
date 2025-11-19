@@ -15,6 +15,14 @@
   min-height: 4rem;
 }
 
+/* Highlight active input with subtle golden border */
+input:focus,
+textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(180, 136, 17, 0.5);
+  background-color: #f1ce84 !important;
+}
+
 /* Custom hover states for buttons */
 .hover-bg-dark-blue:hover {
   background-color: #1e40af;
