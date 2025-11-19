@@ -1,6 +1,18 @@
 import { solvePhasicDialPuzzle } from './solvers/phasic-dial-solver.js';
 import { solveCuboidPuzzle } from './solvers/rolling-cuboid-solver.js';
 
+let dialSolverTimeout = null;
+
+export function solvePhasicDialAuto() {
+  if (dialSolverTimeout) {
+    clearTimeout(dialSolverTimeout);
+  }
+
+  dialSolverTimeout = setTimeout(() => {
+    solvePhasicDial();
+  }, 500);
+}
+
 export function solvePhasicDial() {
   const moduli = document.getElementById('dialModuli').value.trim();
   const operations = document.getElementById('dialOperations').value.trim();
@@ -8,16 +20,38 @@ export function solvePhasicDial() {
   const output = document.getElementById('dialOutput');
 
   if (!moduli || !operations || !initialState) {
-    output.innerHTML = '<div class="bg-washed-yellow dark-red pa3 br2 mv2">Please fill in all three fields</div>';
+    output.innerHTML = 'Enter dial moduli, operations, and initial state to solve...';
+    return;
+  }
+
+  if (!/^[0-9]+$/.test(moduli)) {
+    output.innerHTML = '<div class="bg-washed-yellow dark-red pa3 br2 mv2">Dial moduli must contain only digits</div>';
+    return;
+  }
+
+  if (!/^[0-9]+$/.test(operations)) {
+    output.innerHTML = '<div class="bg-washed-yellow dark-red pa3 br2 mv2">Operations must contain only digits</div>';
+    return;
+  }
+
+  if (!/^[0-9]+$/.test(initialState)) {
+    output.innerHTML = '<div class="bg-washed-yellow dark-red pa3 br2 mv2">Initial state must contain only digits</div>';
+    return;
+  }
+
+  if (moduli.length !== initialState.length) {
+    output.innerHTML =
+      '<div class="bg-washed-yellow dark-red pa3 br2 mv2">Number of moduli must match number of initial state values</div>';
+    return;
+  }
+
+  if (operations.length % moduli.length !== 0) {
+    output.innerHTML = '<div class="bg-washed-yellow dark-red pa3 br2 mv2">Operations length must be a multiple of dial count</div>';
     return;
   }
 
   try {
-    if (moduli.length !== initialState.length) {
-      throw new Error('Number of moduli must match number of initial state values');
-    }
-
-    output.innerHTML = '<div>Solving puzzle...</div>';
+    output.innerHTML = '<div class="gray i">Solving puzzle...</div>';
 
     setTimeout(() => {
       try {
@@ -92,10 +126,16 @@ export function initializeUI() {
           }
         }
       });
+
+      input.addEventListener('input', solvePhasicDialAuto);
+      input.addEventListener('paste', () => {
+        setTimeout(solvePhasicDialAuto, 10);
+      });
     }
   });
 
   window.solvePhasicDial = solvePhasicDial;
+  window.solvePhasicDialAuto = solvePhasicDialAuto;
   window.solveCuboidPuzzleUI = solveCuboidPuzzleUI;
 }
 
