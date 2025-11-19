@@ -126,7 +126,7 @@ export function initializeUI() {
       input.addEventListener('keydown', function (e) {
         if (e.key === 'Tab') {
           e.preventDefault();
-          const nextIndex = (index + 1) % dialInputs.length;
+          const nextIndex = e.shiftKey ? (index - 1 + dialInputs.length) % dialInputs.length : (index + 1) % dialInputs.length;
           const nextInput = document.getElementById(dialInputs[nextIndex]);
           if (nextInput) {
             nextInput.focus();
