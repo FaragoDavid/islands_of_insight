@@ -130,6 +130,7 @@ export function initializeUI() {
           const nextInput = document.getElementById(dialInputs[nextIndex]);
           if (nextInput) {
             nextInput.focus();
+            nextInput.select();
           }
         }
       });
