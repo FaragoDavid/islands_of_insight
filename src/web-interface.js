@@ -58,8 +58,7 @@ export function solvePhasicDial() {
         const result = solvePhasicDialPuzzle(moduli, operations, initialState);
 
         if (result.success) {
-          let resultText = `<div class="bg-washed-green dark-green pa3 br2 mv2">Solution found!</div>`;
-          resultText += `Steps: ${result.steps}\n`;
+          let resultText = `Steps: ${result.steps}\n`;
           resultText += `Solution: ${result.solution}\n`;
           resultText += `Time: ${result.time}ms`;
           output.innerHTML = resultText;
@@ -92,8 +91,7 @@ export function solveCuboidPuzzleUI() {
         const result = solveCuboidPuzzle(input);
 
         if (result.success) {
-          let resultText = `<div class="bg-washed-green dark-green pa3 br2 mv2">Solution found!</div>`;
-          resultText += `Steps: ${result.steps}\n`;
+          let resultText = `Steps: ${result.steps}\n`;
           resultText += `Solution: ${result.solution}\n`;
           resultText += `States explored: ${result.statesExplored}\n`;
           resultText += `Time: ${result.time}ms`;
