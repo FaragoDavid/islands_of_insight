@@ -41,17 +41,6 @@ export function solvePhasicDial() {
   }
 }
 
-export function clearDialOutput() {
-  document.getElementById('dialOutput').innerHTML = 'Ready to solve phasic dial puzzles...';
-}
-
-export function clearDialInputs() {
-  document.getElementById('dialModuli').value = '';
-  document.getElementById('dialOperations').value = '';
-  document.getElementById('dialInitialState').value = '';
-  clearDialOutput();
-}
-
 export function solveCuboidPuzzleUI() {
   const input = document.getElementById('gridInput').value.trim();
   const output = document.getElementById('cuboidOutput');
@@ -87,10 +76,6 @@ export function solveCuboidPuzzleUI() {
   }
 }
 
-export function clearCuboidOutput() {
-  document.getElementById('cuboidOutput').innerHTML = 'Ready to solve cuboid puzzles...';
-}
-
 export function initializeUI() {
   const dialInputs = ['dialModuli', 'dialOperations', 'dialInitialState'];
 
@@ -111,10 +96,7 @@ export function initializeUI() {
   });
 
   window.solvePhasicDial = solvePhasicDial;
-  window.clearDialOutput = clearDialOutput;
-  window.clearDialInputs = clearDialInputs;
   window.solveCuboidPuzzleUI = solveCuboidPuzzleUI;
-  window.clearCuboidOutput = clearCuboidOutput;
 }
 
 if (typeof window !== 'undefined') {
