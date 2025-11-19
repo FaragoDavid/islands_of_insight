@@ -58,12 +58,9 @@ export function solvePhasicDial() {
         const result = solvePhasicDialPuzzle(moduli, operations, initialState);
 
         if (result.success) {
-          let resultText = `Steps: ${result.steps}\n`;
-          resultText += `Solution: ${result.solution}\n`;
-          resultText += `Time: ${result.time}ms`;
-          output.innerHTML = resultText;
+          output.innerHTML = result.solution;
         } else {
-          output.innerHTML = `<div class="bg-washed-yellow dark-red pa3 br2 mv2">No solution found. Explored ${result.explored} states in ${result.time}ms.</div>`;
+          output.innerHTML = `<div class="bg-washed-yellow dark-red pa3 br2 mv2">No solution found.</div>`;
         }
       } catch (error) {
         output.innerHTML = `<div class="bg-washed-yellow dark-red pa3 br2 mv2">Error: ${error.message}</div>`;
@@ -91,13 +88,9 @@ export function solveCuboidPuzzleUI() {
         const result = solveCuboidPuzzle(input);
 
         if (result.success) {
-          let resultText = `Steps: ${result.steps}\n`;
-          resultText += `Solution: ${result.solution}\n`;
-          resultText += `States explored: ${result.statesExplored}\n`;
-          resultText += `Time: ${result.time}ms`;
-          output.innerHTML = resultText;
+          output.innerHTML = result.solution;
         } else {
-          output.innerHTML = `<div class="bg-washed-yellow dark-red pa3 br2 mv2">No solution found. Explored ${result.statesExplored} states in ${result.time}ms.</div>`;
+          output.innerHTML = `<div class="bg-washed-yellow dark-red pa3 br2 mv2">No solution found.</div>`;
         }
       } catch (error) {
         output.innerHTML = `<div class="bg-washed-yellow dark-red pa3 br2 mv2">Error: ${error.message}</div>`;

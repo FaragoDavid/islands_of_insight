@@ -65,11 +65,8 @@ export function solvePhasicDialPuzzle(dialModuli, rawOperations, initialState) {
   }
 
   if (!solutionFound) {
-    const endTime = performance.now();
     return {
       success: false,
-      explored: Object.keys(visitedStates).length,
-      time: Math.round(endTime - startTime),
     };
   }
 
@@ -94,14 +91,8 @@ export function solvePhasicDialPuzzle(dialModuli, rawOperations, initialState) {
     solutionOutput += `Move ${currentMoveType}, ${moveCount} times\n`;
   }
 
-  const endTime = performance.now();
-  const solutionSteps = solutionPath.length;
-
   return {
     success: true,
-    steps: solutionSteps,
     solution: solutionOutput.trim(),
-    explored: Object.keys(visitedStates).length,
-    time: Math.round(endTime - startTime),
   };
 }

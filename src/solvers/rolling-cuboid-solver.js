@@ -364,7 +364,6 @@ export function solveCuboidPuzzle(gridInput) {
         const solutionActions = currentPath.slice(1).map((pathNode) => pathNode.action);
         return {
           solution: compressActionSequence(solutionActions, cuboidCount),
-          statesExplored: visitedStates.size,
         };
       }
 
@@ -378,28 +377,19 @@ export function solveCuboidPuzzle(gridInput) {
       }
     }
 
-    return { solution: null, statesExplored: visitedStates.size };
+    return { solution: null };
   }
 
   const result = solvePuzzle();
-  const endTime = performance.now();
-  const solutionSteps = result.solution ? result.solution.length : 0;
 
   if (result.solution) {
     return {
       success: true,
-      steps: solutionSteps,
       solution: result.solution.join(' -> '),
-      statesExplored: result.statesExplored,
-      time: Math.round(endTime - startTime),
     };
   } else {
     return {
       success: false,
-      steps: 0,
-      solution: '',
-      statesExplored: result.statesExplored,
-      time: Math.round(endTime - startTime),
     };
   }
 }
