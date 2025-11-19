@@ -3,12 +3,9 @@
   "version": "1.0.0",
   "description": "Solvers for Islands of Insight puzzles including phasic dial and rolling cuboid puzzles",
   "type": "module",
-  "main": "src/index.js",
   "scripts": {
     "test": "node --test",
     "test:watch": "node --test --watch",
-    "dev": "node src/index.js",
-    "build": "echo 'No build step needed for static site'",
     "serve": "python3 -m http.server 8080"
   },
   "keywords": [
