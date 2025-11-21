@@ -1,7 +1,4 @@
-interface SolverResult {
-  success: boolean;
-  solution?: string[];
-}
+import type { SolverResult } from '../solver-result.js';
 
 export function solvePhasicDialPuzzle(dialModuli: string, rawOperations: string, initialState: string): SolverResult {
   const dialCount = dialModuli.length;

@@ -1,13 +1,14 @@
 import { GameState } from './game-state.js';
 import { compressActionSequence } from './action-compressor.js';
 import { GridParser } from './grid-parser.js';
+import type { SolverResult } from '../solver-result.js';
 
 interface PathNode {
   state: GameState;
   action: string | null;
 }
 
-export function solveCuboidPuzzle(gridInput: string): { success: boolean; solution?: string } {
+export function solveCuboidPuzzle(gridInput: string): SolverResult {
   const parser = new GridParser(gridInput);
   const { characterGrid, cuboids, goalAreas, specialTileCoords } = parser.parse();
 
