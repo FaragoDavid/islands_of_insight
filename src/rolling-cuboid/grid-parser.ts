@@ -1,4 +1,5 @@
 import { Cell, Cuboid } from './cuboid.js';
+import { CellType } from './cell-type.js';
 
 interface GoalArea {
   id: number;
@@ -9,7 +10,7 @@ interface GoalArea {
 }
 
 export class GridParser {
-  private readonly characterGrid: string[][];
+  private readonly characterGrid: CellType[][];
   private readonly gridHeight: number;
   private readonly gridWidth: number;
 
@@ -17,7 +18,7 @@ export class GridParser {
     this.characterGrid = gridInput
       .split('\n')
       .filter((l) => l.trim())
-      .map((l) => l.split(''));
+      .map((l) => l.split('') as CellType[]);
     this.gridHeight = this.characterGrid.length;
     this.gridWidth = this.characterGrid[0].length;
   }
@@ -39,7 +40,7 @@ export class GridParser {
     const coords = new Set<string>();
     for (let row = 0; row < this.gridHeight; row++) {
       for (let col = 0; col < this.gridWidth; col++) {
-        if (this.characterGrid[row][col] === 'h') {
+        if (this.characterGrid[row][col] === CellType.SPECIAL) {
           coords.add(`${row},${col}`);
         }
       }
@@ -119,7 +120,7 @@ export class GridParser {
 
     for (let row = 0; row < this.gridHeight; row++) {
       for (let col = 0; col < this.gridWidth; col++) {
-        if (this.characterGrid[row][col] === 'g' && !visitedCells[row][col]) {
+        if (this.characterGrid[row][col] === CellType.GOAL && !visitedCells[row][col]) {
           const goalArea = this.floodFillGoalArea(row, col, visitedCells);
           goalAreas.push({
             id: goalAreas.length + 1,
@@ -161,7 +162,7 @@ export class GridParser {
         if (
           this.isWithinBounds(neighborRow, neighborCol) &&
           !visitedCells[neighborRow][neighborCol] &&
-          this.characterGrid[neighborRow][neighborCol] === 'g'
+          this.characterGrid[neighborRow][neighborCol] === CellType.GOAL
         ) {
           visitedCells[neighborRow][neighborCol] = true;
           searchStack.push([neighborRow, neighborCol]);

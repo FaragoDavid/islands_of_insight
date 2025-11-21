@@ -1,5 +1,7 @@
 import type { SolverResult } from '../solver-result.js';
 
+const TARGET_DIAL_STATE = '0';
+
 export function solvePhasicDialPuzzle(dialModuli: string, rawOperations: string, initialState: string): SolverResult {
   const dialCount = dialModuli.length;
 
@@ -12,7 +14,7 @@ export function solvePhasicDialPuzzle(dialModuli: string, rawOperations: string,
   }
 
   const operations = parseOperations(rawOperations, dialCount);
-  const targetState = '0'.repeat(dialCount);
+  const targetState = TARGET_DIAL_STATE.repeat(dialCount);
 
   const visitedStates = new Map<string, string>();
   visitedStates.set(initialState, '');

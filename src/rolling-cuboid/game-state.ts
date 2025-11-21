@@ -1,4 +1,5 @@
 import { Cuboid, Position, Dimensions, Cell } from './cuboid.js';
+import { CellType } from './cell-type.js';
 
 interface GoalArea {
   id: number;
@@ -29,7 +30,7 @@ export class GameState {
     public readonly cuboids: Cuboid[],
     public readonly remainingSpecialTiles: Set<string>,
     public readonly goalAreas: GoalArea[],
-    public readonly characterGrid: string[][],
+    public readonly characterGrid: CellType[][],
   ) {
     this.gridHeight = characterGrid.length;
     this.gridWidth = characterGrid[0].length;
@@ -37,7 +38,7 @@ export class GameState {
     this.originalSpecialTileCoords = new Set();
     for (let row = 0; row < this.gridHeight; row++) {
       for (let col = 0; col < this.gridWidth; col++) {
-        if (characterGrid[row][col] === 'h') {
+        if (characterGrid[row][col] === CellType.SPECIAL) {
           this.originalSpecialTileCoords.add(`${row},${col}`);
         }
       }
@@ -123,8 +124,7 @@ export class GameState {
   isCellPassableInState(row: number, col: number, remainingSpecialTiles: Set<string>): boolean {
     if (!this.isWithinGridBounds(row, col)) return false;
     const cellCharacter = this.characterGrid[row][col];
-    if (cellCharacter === 'x') return false;
-    if (cellCharacter === ' ') return false;
+    if (cellCharacter === CellType.BLOCKED) return false;
 
     const coordinateKey = `${row},${col}`;
     if (this.originalSpecialTileCoords.has(coordinateKey) && !remainingSpecialTiles.has(coordinateKey)) {

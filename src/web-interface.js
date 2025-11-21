@@ -1,6 +1,9 @@
 import { solvePhasicDialPuzzle } from './solvers/phasic-dial-solver.js';
 import { solveCuboidPuzzle } from '../dist/rolling-cuboid/solver.js';
 
+const PHASIC_DIAL_DEBOUNCE_MS = 500;
+const CUBOID_DEBOUNCE_MS = 1000;
+
 let dialSolverTimeout = null;
 let cuboidSolverTimeout = null;
 
@@ -11,7 +14,7 @@ export function solvePhasicDialAuto() {
 
   dialSolverTimeout = setTimeout(() => {
     solvePhasicDial();
-  }, 500);
+  }, PHASIC_DIAL_DEBOUNCE_MS);
 }
 
 export function solveCuboidPuzzleAuto() {
@@ -21,7 +24,7 @@ export function solveCuboidPuzzleAuto() {
 
   cuboidSolverTimeout = setTimeout(() => {
     solveCuboidPuzzleUI();
-  }, 1000);
+  }, CUBOID_DEBOUNCE_MS);
 }
 export function solvePhasicDial() {
   const moduli = document.getElementById('dialModuli').value.trim();
