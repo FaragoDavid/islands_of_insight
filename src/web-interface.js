@@ -1,4 +1,4 @@
-import { solvePhasicDialPuzzle } from './solvers/phasic-dial-solver.js';
+import { solvePhasicDialPuzzle } from '../dist/phasic-dial/solver.js';
 import { solveCuboidPuzzle } from '../dist/rolling-cuboid/solver.js';
 
 const PHASIC_DIAL_DEBOUNCE_MS = 500;
