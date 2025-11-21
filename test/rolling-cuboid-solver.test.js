@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { solveCuboidPuzzle } from '../src/solvers/rolling-cuboid-solver.js';
+import { solveCuboidPuzzle } from '../src/rolling-cuboid/solver.js';
 
 describe('Rolling Cuboid Solver', () => {
   test('should solve simple puzzle', () => {

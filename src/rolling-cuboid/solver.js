@@ -1,6 +1,7 @@
-export function solveCuboidPuzzle(gridInput) {
-  const startTime = performance.now();
+import { GameState } from './game-state.js';
+import { Cuboid } from './cuboid.js';
 
+export function solveCuboidPuzzle(gridInput) {
   function parseGrid(input) {
     return input
       .split('\n')
@@ -83,7 +84,7 @@ export function solveCuboidPuzzle(gridInput) {
         const cuboidId = cuboidList.length + 1;
         cuboidList.push({
           id: cuboidId,
-          position: [minRow, minCol],
+          position: { row: minRow, col: minCol },
           dimensions: [cuboidWidth, cuboidDepth, cuboidHeight3D],
           cells: cuboidFootprintCells,
         });
@@ -147,176 +148,20 @@ export function solveCuboidPuzzle(gridInput) {
     }
   }
 
-  function getCellsForPositionAndDimensions(position, dimensions) {
-    const [startRow, startCol] = position;
-    const [width, depth] = dimensions;
-    const occupiedCells = [];
-    for (let deltaRow = 0; deltaRow < depth; deltaRow++) {
-      for (let deltaCol = 0; deltaCol < width; deltaCol++) {
-        occupiedCells.push([startRow + deltaRow, startCol + deltaCol]);
-      }
-    }
-    return occupiedCells;
-  }
-
-  function convertCellsToCoordinateSet(cellList) {
-    return new Set(cellList.map(([row, col]) => `${row},${col}`));
-  }
-
-  function isCellPassableInState(row, col, remainingSpecialTiles) {
-    if (!isWithinGridBounds(row, col)) return false;
-    const cellCharacter = characterGrid[row][col];
-    if (cellCharacter === 'x') return false;
-    if (cellCharacter === ' ') return false;
-
-    const coordinateKey = `${row},${col}`;
-    if (originalSpecialTileCoords.has(coordinateKey) && !remainingSpecialTiles.has(coordinateKey)) {
-      return false;
-    }
-    return true;
-  }
-
-  function serializeGameState(gameState) {
-    const cuboidDescriptions = gameState.cuboids
-      .map((cuboid) => `${cuboid.position[0]},${cuboid.position[1]}|${cuboid.dimensions.join(',')}`)
-      .join(';');
-    const specialTileKeys = [...gameState.remainingSpecialTiles].sort().join(';');
-    return `${cuboidDescriptions}|${specialTileKeys}`;
-  }
-
-  let initialGameState = {
-    cuboids: cuboidList.map((cuboid) => ({
-      id: cuboid.id,
-      position: cuboid.position.slice(),
-      dimensions: cuboid.dimensions.slice(),
-      cells: cuboid.cells.map((cellCoord) => cellCoord.slice()),
-    })),
-    remainingSpecialTiles: new Set(originalSpecialTileCoords),
-  };
+  let initialGameState = new GameState(
+    cuboidList.map((cuboid) => new Cuboid(cuboid.id, cuboid.position, cuboid.dimensions, cuboid.cells)),
+    new Set(originalSpecialTileCoords),
+    goalAreas,
+    characterGrid,
+  );
 
   for (const cuboid of initialGameState.cuboids) {
-    const coveredCells = convertCellsToCoordinateSet(cuboid.cells);
+    const coveredCells = initialGameState.convertCellsToCoordinateSet(cuboid.cells);
     for (const specialCoord of [...initialGameState.remainingSpecialTiles]) {
       if (coveredCells.has(specialCoord)) {
         initialGameState.remainingSpecialTiles.delete(specialCoord);
       }
     }
-  }
-
-  function generateNeighborStates(currentState) {
-    const neighborStates = [];
-
-    for (let cuboidIndex = 0; cuboidIndex < currentState.cuboids.length; cuboidIndex++) {
-      const movingCuboid = currentState.cuboids[cuboidIndex];
-      const otherCuboids = currentState.cuboids.filter((_, index) => index !== cuboidIndex);
-
-      const [currentRow, currentCol] = movingCuboid.position;
-      const [width, depth, height] = movingCuboid.dimensions;
-
-      const rollDirections = [
-        { name: 'down', deltaRow: depth, deltaCol: 0, newDimensions: [width, height, depth] },
-        { name: 'up', deltaRow: -height, deltaCol: 0, newDimensions: [width, height, depth] },
-        { name: 'right', deltaRow: 0, deltaCol: width, newDimensions: [height, depth, width] },
-        { name: 'left', deltaRow: 0, deltaCol: -height, newDimensions: [height, depth, width] },
-      ];
-
-      for (const direction of rollDirections) {
-        const newRow = currentRow + direction.deltaRow;
-        const newCol = currentCol + direction.deltaCol;
-        const newDimensions = direction.newDimensions.slice();
-        const newFootprintCells = getCellsForPositionAndDimensions([newRow, newCol], newDimensions);
-
-        const allCellsPassable = newFootprintCells.every(([row, col]) =>
-          isCellPassableInState(row, col, currentState.remainingSpecialTiles),
-        );
-        if (!allCellsPassable) continue;
-
-        const newFootprintSet = convertCellsToCoordinateSet(newFootprintCells);
-        let hasCollision = false;
-        for (const otherCuboid of otherCuboids) {
-          const otherCuboidSet = convertCellsToCoordinateSet(otherCuboid.cells);
-          for (const coord of newFootprintSet) {
-            if (otherCuboidSet.has(coord)) {
-              hasCollision = true;
-              break;
-            }
-          }
-          if (hasCollision) break;
-        }
-        if (hasCollision) continue;
-
-        const updatedRemainingSpecial = new Set(currentState.remainingSpecialTiles);
-        for (const [row, col] of newFootprintCells) {
-          const coordinateKey = `${row},${col}`;
-          if (updatedRemainingSpecial.has(coordinateKey)) {
-            updatedRemainingSpecial.delete(coordinateKey);
-          }
-        }
-
-        const updatedCuboids = currentState.cuboids.map((cuboid, index) => {
-          if (index === cuboidIndex) {
-            return {
-              id: cuboid.id,
-              position: [newRow, newCol],
-              dimensions: newDimensions.slice(),
-              cells: newFootprintCells.map((cellCoord) => cellCoord.slice()),
-            };
-          } else {
-            return {
-              id: cuboid.id,
-              position: cuboid.position.slice(),
-              dimensions: cuboid.dimensions.slice(),
-              cells: cuboid.cells.map((cellCoord) => cellCoord.slice()),
-            };
-          }
-        });
-
-        neighborStates.push({
-          cuboids: updatedCuboids,
-          remainingSpecialTiles: updatedRemainingSpecial,
-          action: `C${movingCuboid.id} ${direction.name}`,
-        });
-      }
-    }
-    return neighborStates;
-  }
-
-  function isGoalState(gameState) {
-    if (gameState.remainingSpecialTiles.size > 0) return false;
-
-    if (goalAreas.length === 0) return true;
-
-    // Collect all goal cells into a single set
-    const allGoalCells = new Set();
-    for (const goalArea of goalAreas) {
-      for (const cell of goalArea.cellsSet) {
-        allGoalCells.add(cell);
-      }
-    }
-
-    // Collect all cells covered by all cuboids
-    const allCuboidCells = new Set();
-    for (const cuboid of gameState.cuboids) {
-      for (const cell of cuboid.cells) {
-        allCuboidCells.add(`${cell[0]},${cell[1]}`);
-      }
-    }
-
-    // Check if all goal cells are covered
-    for (const goalCell of allGoalCells) {
-      if (!allCuboidCells.has(goalCell)) {
-        return false;
-      }
-    }
-
-    // Check if any non-goal cells are covered
-    for (const cuboidCell of allCuboidCells) {
-      if (!allGoalCells.has(cuboidCell)) {
-        return false;
-      }
-    }
-
-    return true;
   }
 
   function compressActionSequence(actionList, cuboidCount) {
@@ -345,34 +190,43 @@ export function solveCuboidPuzzle(gridInput) {
   }
 
   function solvePuzzle() {
+    const startTime = performance.now();
     const startingState = initialGameState;
     const cuboidCount = startingState.cuboids.length;
     const searchQueue = [[{ state: startingState, action: null }]];
-    const visitedStates = new Set([serializeGameState(startingState)]);
+    const visitedStates = new Set([startingState.serialize()]);
 
     while (searchQueue.length > 0) {
       const currentPath = searchQueue.shift();
       const currentPathNode = currentPath[currentPath.length - 1];
       const currentState = currentPathNode.state;
 
-      if (isGoalState(currentState)) {
+      if (currentState.isGoal()) {
         const solutionActions = currentPath.slice(1).map((pathNode) => pathNode.action);
+        const endTime = performance.now();
         return {
           solution: compressActionSequence(solutionActions, cuboidCount),
+          statesExplored: visitedStates.size,
+          time: endTime - startTime,
         };
       }
 
-      const neighborStates = generateNeighborStates(currentState);
+      const neighborStates = currentState.generateNeighborStates();
       for (const neighborState of neighborStates) {
-        const stateKey = serializeGameState(neighborState);
+        const stateKey = neighborState.state.serialize();
         if (!visitedStates.has(stateKey)) {
           visitedStates.add(stateKey);
-          searchQueue.push([...currentPath, { state: neighborState, action: neighborState.action }]);
+          searchQueue.push([...currentPath, neighborState]);
         }
       }
     }
 
-    return { solution: null };
+    const endTime = performance.now();
+    return {
+      solution: null,
+      statesExplored: visitedStates.size,
+      time: endTime - startTime,
+    };
   }
 
   const result = solvePuzzle();
@@ -381,10 +235,15 @@ export function solveCuboidPuzzle(gridInput) {
     return {
       success: true,
       solution: result.solution.join(' -> '),
+      steps: result.solution.length,
+      statesExplored: result.statesExplored,
+      time: result.time,
     };
   } else {
     return {
       success: false,
+      statesExplored: result.statesExplored,
+      time: result.time,
     };
   }
 }

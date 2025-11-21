@@ -1,5 +1,5 @@
 import { solvePhasicDialPuzzle } from './solvers/phasic-dial-solver.js';
-import { solveCuboidPuzzle } from './solvers/rolling-cuboid-solver.js';
+import { solveCuboidPuzzle } from './rolling-cuboid/solver.js';
 
 let dialSolverTimeout = null;
 let cuboidSolverTimeout = null;
