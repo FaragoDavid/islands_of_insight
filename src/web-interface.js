@@ -96,6 +96,11 @@ export function solveCuboidPuzzleUI() {
     return;
   }
 
+  if (!/[1-9]/.test(input)) {
+    output.innerHTML = 'Add at least one cuboid (digits 1-9) to start solving...';
+    return;
+  }
+
   try {
     output.innerHTML = '<div class="gray i">Solving puzzle...</div>';
 
