@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { solvePhasicDialPuzzle } from '../src/solvers/phasic-dial-solver.js';
+import { solvePhasicDialPuzzle } from '../dist/phasic-dial/solver.js';
 
 describe('Phasic Dial Solver', () => {
   test('should solve simple puzzle', () => {
@@ -11,9 +11,8 @@ describe('Phasic Dial Solver', () => {
     const result = solvePhasicDialPuzzle(moduli, operations, initialState);
 
     assert.strictEqual(result.success, true);
-    assert(result.steps > 0);
-    assert(typeof result.solution === 'string');
-    assert(result.time >= 0);
+    assert(Array.isArray(result.solution));
+    assert(result.solution && result.solution.length > 0);
   });
 
   test('should handle puzzle with no solution', () => {
@@ -52,8 +51,8 @@ describe('Phasic Dial Solver', () => {
     const result = solvePhasicDialPuzzle(dialModuli, rawOperations, initialState);
 
     assert.strictEqual(result.success, true);
-    assert(result.steps > 0);
-    assert(typeof result.solution === 'string');
-    assert(result.solution.includes('Move'));
+    assert(Array.isArray(result.solution));
+    assert(result.solution && result.solution.length > 0);
+    assert(result.solution && result.solution[0].includes('Move'));
   });
 });
