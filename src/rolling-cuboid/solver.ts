@@ -1,8 +1,42 @@
 import { GameState } from './game-state.js';
-import { Cuboid } from './cuboid.js';
+import { Cuboid, Cell, Dimensions } from './cuboid.js';
 
-export function solveCuboidPuzzle(gridInput) {
-  function parseGrid(input) {
+interface GoalArea {
+  id: number;
+  topLeft: Cell;
+  width: number;
+  height: number;
+  cellsSet: Set<string>;
+}
+
+interface CuboidData {
+  id: number;
+  position: { row: number; col: number };
+  dimensions: Dimensions;
+  cells: Cell[];
+}
+
+interface PathNode {
+  state: GameState;
+  action: string | null;
+}
+
+interface SolveResult {
+  solution: string[] | null;
+  statesExplored: number;
+  time: number;
+}
+
+export interface SolverResult {
+  success: boolean;
+  solution?: string;
+  steps?: number;
+  statesExplored: number;
+  time: number;
+}
+
+export function solveCuboidPuzzle(gridInput: string): SolverResult {
+  function parseGrid(input: string): string[][] {
     return input
       .split('\n')
       .filter((l) => l.trim())
@@ -13,7 +47,7 @@ export function solveCuboidPuzzle(gridInput) {
   const gridHeight = characterGrid.length;
   const gridWidth = characterGrid[0].length;
 
-  const originalSpecialTileCoords = new Set();
+  const originalSpecialTileCoords = new Set<string>();
   for (let row = 0; row < gridHeight; row++) {
     for (let col = 0; col < gridWidth; col++) {
       if (characterGrid[row][col] === 'h') {
@@ -23,9 +57,9 @@ export function solveCuboidPuzzle(gridInput) {
   }
 
   const visitedCuboidCells = Array.from({ length: gridHeight }, () => Array(gridWidth).fill(false));
-  const cuboidList = [];
+  const cuboidList: CuboidData[] = [];
 
-  function isWithinGridBounds(row, col) {
+  function isWithinGridBounds(row: number, col: number): boolean {
     return row >= 0 && row < gridHeight && col >= 0 && col < gridWidth;
   }
 
@@ -34,23 +68,23 @@ export function solveCuboidPuzzle(gridInput) {
       const cellChar = characterGrid[row][col];
       if (/[1-9]/.test(cellChar) && !visitedCuboidCells[row][col]) {
         const cuboidHeight = cellChar;
-        const searchStack = [[row, col]];
+        const searchStack: Cell[] = [[row, col]];
         visitedCuboidCells[row][col] = true;
-        const cuboidCells = [];
+        const cuboidCells: Cell[] = [];
         let minRow = row,
           maxRow = row,
           minCol = col,
           maxCol = col;
 
         while (searchStack.length) {
-          const [currentRow, currentCol] = searchStack.pop();
+          const [currentRow, currentCol] = searchStack.pop()!;
           cuboidCells.push([currentRow, currentCol]);
           minRow = Math.min(minRow, currentRow);
           maxRow = Math.max(maxRow, currentRow);
           minCol = Math.min(minCol, currentCol);
           maxCol = Math.max(maxCol, currentCol);
 
-          const neighborDeltas = [
+          const neighborDeltas: Cell[] = [
             [1, 0],
             [-1, 0],
             [0, 1],
@@ -74,7 +108,7 @@ export function solveCuboidPuzzle(gridInput) {
         const cuboidDepth = maxRow - minRow + 1;
         const cuboidHeight3D = Number(cuboidHeight);
 
-        const cuboidFootprintCells = [];
+        const cuboidFootprintCells: Cell[] = [];
         for (let footprintRow = minRow; footprintRow <= maxRow; footprintRow++) {
           for (let footprintCol = minCol; footprintCol <= maxCol; footprintCol++) {
             cuboidFootprintCells.push([footprintRow, footprintCol]);
@@ -93,28 +127,28 @@ export function solveCuboidPuzzle(gridInput) {
   }
 
   const visitedGoalCells = Array.from({ length: gridHeight }, () => Array(gridWidth).fill(false));
-  const goalAreas = [];
+  const goalAreas: GoalArea[] = [];
 
   for (let row = 0; row < gridHeight; row++) {
     for (let col = 0; col < gridWidth; col++) {
       if (characterGrid[row][col] === 'g' && !visitedGoalCells[row][col]) {
-        const goalSearchStack = [[row, col]];
+        const goalSearchStack: Cell[] = [[row, col]];
         visitedGoalCells[row][col] = true;
-        const goalCellComponents = [];
+        const goalCellComponents: Cell[] = [];
         let minRow = row,
           maxRow = row,
           minCol = col,
           maxCol = col;
 
         while (goalSearchStack.length) {
-          const [currentRow, currentCol] = goalSearchStack.pop();
+          const [currentRow, currentCol] = goalSearchStack.pop()!;
           goalCellComponents.push([currentRow, currentCol]);
           minRow = Math.min(minRow, currentRow);
           maxRow = Math.max(maxRow, currentRow);
           minCol = Math.min(minCol, currentCol);
           maxCol = Math.max(maxCol, currentCol);
 
-          const neighborDeltas = [
+          const neighborDeltas: Cell[] = [
             [1, 0],
             [-1, 0],
             [0, 1],
@@ -164,10 +198,10 @@ export function solveCuboidPuzzle(gridInput) {
     }
   }
 
-  function compressActionSequence(actionList, cuboidCount) {
+  function compressActionSequence(actionList: string[], cuboidCount: number): string[] {
     if (actionList.length === 0) return [];
 
-    const compressedActions = [];
+    const compressedActions: string[] = [];
     let currentAction = actionList[0];
     let actionCount = 1;
 
@@ -189,20 +223,20 @@ export function solveCuboidPuzzle(gridInput) {
     return compressedActions;
   }
 
-  function solvePuzzle() {
+  function solvePuzzle(): SolveResult {
     const startTime = performance.now();
     const startingState = initialGameState;
     const cuboidCount = startingState.cuboids.length;
-    const searchQueue = [[{ state: startingState, action: null }]];
+    const searchQueue: PathNode[][] = [[{ state: startingState, action: null }]];
     const visitedStates = new Set([startingState.serialize()]);
 
     while (searchQueue.length > 0) {
-      const currentPath = searchQueue.shift();
+      const currentPath = searchQueue.shift()!;
       const currentPathNode = currentPath[currentPath.length - 1];
       const currentState = currentPathNode.state;
 
       if (currentState.isGoal()) {
-        const solutionActions = currentPath.slice(1).map((pathNode) => pathNode.action);
+        const solutionActions = currentPath.slice(1).map((pathNode) => pathNode.action!);
         const endTime = performance.now();
         return {
           solution: compressActionSequence(solutionActions, cuboidCount),

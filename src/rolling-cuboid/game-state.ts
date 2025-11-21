@@ -1,17 +1,36 @@
-import { Cuboid } from './cuboid';
+import { Cuboid, Position, Dimensions, Cell } from './cuboid.js';
+
+interface GoalArea {
+  id: number;
+  topLeft: Cell;
+  width: number;
+  height: number;
+  cellsSet: Set<string>;
+}
+
+interface RollDirection {
+  name: string;
+  deltaRow: number;
+  deltaCol: number;
+  newDimensions: Dimensions;
+}
+
+interface NeighborState {
+  state: GameState;
+  action: string;
+}
 
 export class GameState {
-  /**
-   * @param {Cuboid[]} cuboids
-   * @param {Set<string>} remainingSpecialTiles
-   * @param {Object[]} goalAreas
-   * @param {string[][]} characterGrid
-   */
-  constructor(cuboids, remainingSpecialTiles, goalAreas, characterGrid) {
-    this.cuboids = cuboids;
-    this.remainingSpecialTiles = remainingSpecialTiles;
-    this.goalAreas = goalAreas;
-    this.characterGrid = characterGrid;
+  public readonly gridHeight: number;
+  public readonly gridWidth: number;
+  public readonly originalSpecialTileCoords: Set<string>;
+
+  constructor(
+    public readonly cuboids: Cuboid[],
+    public readonly remainingSpecialTiles: Set<string>,
+    public readonly goalAreas: GoalArea[],
+    public readonly characterGrid: string[][],
+  ) {
     this.gridHeight = characterGrid.length;
     this.gridWidth = characterGrid[0].length;
 
@@ -25,7 +44,7 @@ export class GameState {
     }
   }
 
-  serialize() {
+  serialize(): string {
     const cuboidDescriptions = this.cuboids
       .map((cuboid) => `${cuboid.position.row},${cuboid.position.col}|${cuboid.dimensions.join(',')}`)
       .join(';');
@@ -33,13 +52,13 @@ export class GameState {
     return `${cuboidDescriptions}|${specialTileKeys}`;
   }
 
-  isGoal() {
+  isGoal(): boolean {
     if (this.remainingSpecialTiles.size > 0) return false;
 
     if (this.goalAreas.length === 0) return true;
 
     // Collect all goal cells into a single set
-    const allGoalCells = new Set();
+    const allGoalCells = new Set<string>();
     for (const goalArea of this.goalAreas) {
       for (const cell of goalArea.cellsSet) {
         allGoalCells.add(cell);
@@ -47,7 +66,7 @@ export class GameState {
     }
 
     // Collect all cells covered by all cuboids
-    const allCuboidCells = new Set();
+    const allCuboidCells = new Set<string>();
     for (const cuboid of this.cuboids) {
       for (const cell of cuboid.cells) {
         allCuboidCells.add(`${cell[0]},${cell[1]}`);
@@ -71,14 +90,14 @@ export class GameState {
     return true;
   }
 
-  isWithinGridBounds(row, col) {
+  isWithinGridBounds(row: number, col: number): boolean {
     return row >= 0 && row < this.gridHeight && col >= 0 && col < this.gridWidth;
   }
 
-  getCellsForPositionAndDimensions(position, dimensions) {
+  getCellsForPositionAndDimensions(position: Position, dimensions: Dimensions): Cell[] {
     const { row: startRow, col: startCol } = position;
     const [width, depth] = dimensions;
-    const occupiedCells = [];
+    const occupiedCells: Cell[] = [];
     for (let deltaRow = 0; deltaRow < depth; deltaRow++) {
       for (let deltaCol = 0; deltaCol < width; deltaCol++) {
         occupiedCells.push([startRow + deltaRow, startCol + deltaCol]);
@@ -87,11 +106,11 @@ export class GameState {
     return occupiedCells;
   }
 
-  convertCellsToCoordinateSet(cellList) {
+  convertCellsToCoordinateSet(cellList: Cell[]): Set<string> {
     return new Set(cellList.map(([row, col]) => `${row},${col}`));
   }
 
-  isCellPassableInState(row, col, remainingSpecialTiles) {
+  isCellPassableInState(row: number, col: number, remainingSpecialTiles: Set<string>): boolean {
     if (!this.isWithinGridBounds(row, col)) return false;
     const cellCharacter = this.characterGrid[row][col];
     if (cellCharacter === 'x') return false;
@@ -104,12 +123,12 @@ export class GameState {
     return true;
   }
 
-  rollingCuboidRollCollides(rollingCuboid, direction, otherCuboids) {
+  rollingCuboidRollCollides(rollingCuboid: Cuboid, direction: RollDirection, otherCuboids: Cuboid[]): boolean {
     const { row: currentRow, col: currentCol } = rollingCuboid.position;
 
     const newFootprintCells = this.getCellsForPositionAndDimensions(
       { row: currentRow + direction.deltaRow, col: currentCol + direction.deltaCol },
-      direction.newDimensions.slice(),
+      [...direction.newDimensions] as Dimensions,
     );
 
     const allCellsPassable = newFootprintCells.every(([row, col]) => this.isCellPassableInState(row, col, this.remainingSpecialTiles));
@@ -128,13 +147,13 @@ export class GameState {
     return false;
   }
 
-  rollCuboid(cuboidIndex, direction) {
+  rollCuboid(cuboidIndex: number, direction: RollDirection): NeighborState {
     const movingCuboid = this.cuboids[cuboidIndex];
     const { row: currentRow, col: currentCol } = movingCuboid.position;
 
     const newRow = currentRow + direction.deltaRow;
     const newCol = currentCol + direction.deltaCol;
-    const newDimensions = direction.newDimensions.slice();
+    const newDimensions = [...direction.newDimensions] as Dimensions;
     const newFootprintCells = this.getCellsForPositionAndDimensions({ row: newRow, col: newCol }, newDimensions);
 
     const updatedRemainingSpecial = new Set(this.remainingSpecialTiles);
@@ -155,15 +174,15 @@ export class GameState {
     };
   }
 
-  generateNeighborStates() {
-    const neighborStates = [];
+  generateNeighborStates(): NeighborState[] {
+    const neighborStates: NeighborState[] = [];
 
     for (let cuboidIndex = 0; cuboidIndex < this.cuboids.length; cuboidIndex++) {
       const rollingCuboid = this.cuboids[cuboidIndex];
       const [width, depth, height] = rollingCuboid.dimensions;
       const otherCuboids = this.cuboids.filter((_, index) => index !== cuboidIndex);
 
-      const rollDirections = [
+      const rollDirections: RollDirection[] = [
         { name: 'down', deltaRow: depth, deltaCol: 0, newDimensions: [width, height, depth] },
         { name: 'up', deltaRow: -height, deltaCol: 0, newDimensions: [width, height, depth] },
         { name: 'right', deltaRow: 0, deltaCol: width, newDimensions: [height, depth, width] },

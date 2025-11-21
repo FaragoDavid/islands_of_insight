@@ -4,6 +4,7 @@
   "description": "Solvers for Islands of Insight puzzles including phasic dial and rolling cuboid puzzles",
   "type": "module",
   "scripts": {
+    "build": "tsc",
     "test": "node --test",
     "test:watch": "node --test --watch",
     "serve": "python3 -m http.server 8080"
@@ -24,5 +25,10 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
   }
 }
