@@ -1,13 +1,13 @@
-import { solvePhasicDialPuzzle } from '../dist/phasic-dial/solver.js';
-import { solveCuboidPuzzle } from '../dist/rolling-cuboid/solver.js';
+import { solvePhasicDialPuzzle } from './phasic-dial/solver.js';
+import { solveCuboidPuzzle } from './rolling-cuboid/solver.js';
 
 const PHASIC_DIAL_DEBOUNCE_MS = 500;
 const CUBOID_DEBOUNCE_MS = 1000;
 
-let dialSolverTimeout = null;
-let cuboidSolverTimeout = null;
+let dialSolverTimeout: ReturnType<typeof setTimeout> | null = null;
+let cuboidSolverTimeout: ReturnType<typeof setTimeout> | null = null;
 
-export function solvePhasicDialAuto() {
+export function solvePhasicDialAuto(): void {
   if (dialSolverTimeout) {
     clearTimeout(dialSolverTimeout);
   }
@@ -17,7 +17,7 @@ export function solvePhasicDialAuto() {
   }, PHASIC_DIAL_DEBOUNCE_MS);
 }
 
-export function solveCuboidPuzzleAuto() {
+export function solveCuboidPuzzleAuto(): void {
   if (cuboidSolverTimeout) {
     clearTimeout(cuboidSolverTimeout);
   }
@@ -26,11 +26,18 @@ export function solveCuboidPuzzleAuto() {
     solveCuboidPuzzleUI();
   }, CUBOID_DEBOUNCE_MS);
 }
-export function solvePhasicDial() {
-  const moduli = document.getElementById('dialModuli').value.trim();
-  const operations = document.getElementById('dialOperations').value.trim();
-  const initialState = document.getElementById('dialInitialState').value.trim();
+
+export function solvePhasicDial(): void {
+  const moduliInput = document.getElementById('dialModuli') as HTMLInputElement | null;
+  const operationsInput = document.getElementById('dialOperations') as HTMLInputElement | null;
+  const initialStateInput = document.getElementById('dialInitialState') as HTMLInputElement | null;
   const output = document.getElementById('dialOutput');
+
+  if (!moduliInput || !operationsInput || !initialStateInput || !output) return;
+
+  const moduli = moduliInput.value.trim();
+  const operations = operationsInput.value.trim();
+  const initialState = initialStateInput.value.trim();
 
   if (!moduli || !operations || !initialState) {
     output.innerHTML = 'Enter dial moduli, operations, and initial state to solve...';
@@ -70,23 +77,29 @@ export function solvePhasicDial() {
       try {
         const result = solvePhasicDialPuzzle(moduli, operations, initialState);
 
-        if (result.success) {
+        if (result.success && Array.isArray(result.solution)) {
           output.innerHTML = result.solution.join('<br>');
         } else {
           output.innerHTML = `<div class="bg-washed-yellow dark-red pa3 br2 mv2">No solution found.</div>`;
         }
       } catch (error) {
-        output.innerHTML = `<div class="bg-washed-yellow dark-red pa3 br2 mv2">Error: ${error.message}</div>`;
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        output.innerHTML = `<div class="bg-washed-yellow dark-red pa3 br2 mv2">Error: ${message}</div>`;
       }
     }, 10);
   } catch (error) {
-    output.innerHTML = `<div class="bg-washed-yellow dark-red pa3 br2 mv2">Error: ${error.message}</div>`;
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    output.innerHTML = `<div class="bg-washed-yellow dark-red pa3 br2 mv2">Error: ${message}</div>`;
   }
 }
 
-export function solveCuboidPuzzleUI() {
-  const input = document.getElementById('gridInput').value.trim();
+export function solveCuboidPuzzleUI(): void {
+  const inputElement = document.getElementById('gridInput') as HTMLTextAreaElement | null;
   const output = document.getElementById('cuboidOutput');
+
+  if (!inputElement || !output) return;
+
+  const input = inputElement.value.trim();
 
   if (!input) {
     output.innerHTML = 'Enter grid layout to solve...';
@@ -111,31 +124,33 @@ export function solveCuboidPuzzleUI() {
       try {
         const result = solveCuboidPuzzle(input);
 
-        if (result.success) {
+        if (result.success && typeof result.solution === 'string') {
           output.innerHTML = result.solution;
         } else {
           output.innerHTML = `<div class="bg-washed-yellow dark-red pa3 br2 mv2">No solution found.</div>`;
         }
       } catch (error) {
-        output.innerHTML = `<div class="bg-washed-yellow dark-red pa3 br2 mv2">Error: ${error.message}</div>`;
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        output.innerHTML = `<div class="bg-washed-yellow dark-red pa3 br2 mv2">Error: ${message}</div>`;
       }
     }, 10);
   } catch (error) {
-    output.innerHTML = `<div class="bg-washed-yellow dark-red pa3 br2 mv2">Error: ${error.message}</div>`;
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    output.innerHTML = `<div class="bg-washed-yellow dark-red pa3 br2 mv2">Error: ${message}</div>`;
   }
 }
 
-export function initializeUI() {
+export function initializeUI(): void {
   const dialInputs = ['dialModuli', 'dialOperations', 'dialInitialState'];
 
   dialInputs.forEach((inputId, index) => {
-    const input = document.getElementById(inputId);
+    const input = document.getElementById(inputId) as HTMLInputElement | null;
     if (input) {
-      input.addEventListener('keydown', function (e) {
+      input.addEventListener('keydown', function (e: KeyboardEvent) {
         if (e.key === 'Tab') {
           e.preventDefault();
           const nextIndex = e.shiftKey ? (index - 1 + dialInputs.length) % dialInputs.length : (index + 1) % dialInputs.length;
-          const nextInput = document.getElementById(dialInputs[nextIndex]);
+          const nextInput = document.getElementById(dialInputs[nextIndex]) as HTMLInputElement | null;
           if (nextInput) {
             nextInput.focus();
             nextInput.select();
@@ -150,7 +165,7 @@ export function initializeUI() {
     }
   });
 
-  const gridInput = document.getElementById('gridInput');
+  const gridInput = document.getElementById('gridInput') as HTMLTextAreaElement | null;
   if (gridInput) {
     gridInput.addEventListener('input', solveCuboidPuzzleAuto);
     gridInput.addEventListener('paste', () => {
@@ -158,10 +173,10 @@ export function initializeUI() {
     });
   }
 
-  window.solvePhasicDial = solvePhasicDial;
-  window.solvePhasicDialAuto = solvePhasicDialAuto;
-  window.solveCuboidPuzzleUI = solveCuboidPuzzleUI;
-  window.solveCuboidPuzzleAuto = solveCuboidPuzzleAuto;
+  (window as any).solvePhasicDial = solvePhasicDial;
+  (window as any).solvePhasicDialAuto = solvePhasicDialAuto;
+  (window as any).solveCuboidPuzzleUI = solveCuboidPuzzleUI;
+  (window as any).solveCuboidPuzzleAuto = solveCuboidPuzzleAuto;
 }
 
 if (typeof window !== 'undefined') {
