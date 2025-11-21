@@ -24,7 +24,6 @@ describe('Phasic Dial Solver', () => {
     const result = solvePhasicDialPuzzle(moduli, operations, initialState);
 
     assert(typeof result.success === 'boolean');
-    assert(result.time >= 0);
   });
 
   test('should validate input lengths', () => {

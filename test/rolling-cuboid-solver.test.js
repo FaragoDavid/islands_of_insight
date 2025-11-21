@@ -13,10 +13,7 @@ describe('Rolling Cuboid Solver', () => {
     const result = solveCuboidPuzzle(grid);
 
     assert.strictEqual(result.success, true);
-    assert(result.steps >= 0);
     assert(typeof result.solution === 'string');
-    assert(result.time >= 0);
-    assert(result.statesExplored > 0);
   });
 
   test('should handle puzzle with no special tiles', () => {
@@ -29,7 +26,6 @@ describe('Rolling Cuboid Solver', () => {
     const result = solveCuboidPuzzle(grid);
 
     assert.strictEqual(result.success, true);
-    assert.strictEqual(result.steps, 0);
   });
 
   test('should handle blocked puzzle', () => {
@@ -42,7 +38,6 @@ xxx
     const result = solveCuboidPuzzle(grid);
 
     assert.strictEqual(result.success, false);
-    assert(result.statesExplored > 0);
   });
 
   test('should solve puzzle with multiple special tiles', () => {
@@ -55,7 +50,6 @@ hhh
     const result = solveCuboidPuzzle(grid);
 
     assert.strictEqual(result.success, true);
-    assert(result.steps > 0);
     assert(typeof result.solution === 'string');
   });
 
@@ -80,7 +74,5 @@ hhhhhhhhh
     const result = solveCuboidPuzzle(defaultGrid);
 
     assert(typeof result.success === 'boolean');
-    assert(result.time >= 0);
-    assert(result.statesExplored > 0);
   });
 });

@@ -1,283 +1,43 @@
 import { GameState } from './game-state.js';
-import { Cuboid, Cell, Dimensions } from './cuboid.js';
-
-interface GoalArea {
-  id: number;
-  topLeft: Cell;
-  width: number;
-  height: number;
-  cellsSet: Set<string>;
-}
-
-interface CuboidData {
-  id: number;
-  position: { row: number; col: number };
-  dimensions: Dimensions;
-  cells: Cell[];
-}
+import { compressActionSequence } from './action-compressor.js';
+import { GridParser } from './grid-parser.js';
 
 interface PathNode {
   state: GameState;
   action: string | null;
 }
 
-interface SolveResult {
-  solution: string[] | null;
-  statesExplored: number;
-  time: number;
-}
+export function solveCuboidPuzzle(gridInput: string): { success: boolean; solution?: string } {
+  const parser = new GridParser(gridInput);
+  const { characterGrid, cuboids, goalAreas, specialTileCoords } = parser.parse();
 
-export interface SolverResult {
-  success: boolean;
-  solution?: string;
-  steps?: number;
-  statesExplored: number;
-  time: number;
-}
+  const startingState = new GameState(cuboids, new Set(specialTileCoords), goalAreas, characterGrid);
+  const searchQueue: PathNode[][] = [[{ state: startingState, action: null }]];
+  const visitedStates = new Set([startingState.serialize()]);
 
-export function solveCuboidPuzzle(gridInput: string): SolverResult {
-  function parseGrid(input: string): string[][] {
-    return input
-      .split('\n')
-      .filter((l) => l.trim())
-      .map((l) => l.split(''));
-  }
+  while (searchQueue.length > 0) {
+    const currentPath = searchQueue.shift()!;
+    const currentPathNode = currentPath[currentPath.length - 1];
+    const currentState = currentPathNode.state;
 
-  const characterGrid = parseGrid(gridInput);
-  const gridHeight = characterGrid.length;
-  const gridWidth = characterGrid[0].length;
+    if (currentState.isGoal()) {
+      const solutionActions = currentPath.slice(1).map((pathNode) => pathNode.action!);
+      return {
+        success: true,
+        solution: compressActionSequence(solutionActions, startingState.cuboids.length).join(' -> '),
+      };
+    }
 
-  const originalSpecialTileCoords = new Set<string>();
-  for (let row = 0; row < gridHeight; row++) {
-    for (let col = 0; col < gridWidth; col++) {
-      if (characterGrid[row][col] === 'h') {
-        originalSpecialTileCoords.add(`${row},${col}`);
+    for (const neighborState of currentState.generateNeighborStates()) {
+      const stateKey = neighborState.state.serialize();
+      if (!visitedStates.has(stateKey)) {
+        visitedStates.add(stateKey);
+        searchQueue.push([...currentPath, neighborState]);
       }
     }
   }
 
-  const visitedCuboidCells = Array.from({ length: gridHeight }, () => Array(gridWidth).fill(false));
-  const cuboidList: CuboidData[] = [];
-
-  function isWithinGridBounds(row: number, col: number): boolean {
-    return row >= 0 && row < gridHeight && col >= 0 && col < gridWidth;
-  }
-
-  for (let row = 0; row < gridHeight; row++) {
-    for (let col = 0; col < gridWidth; col++) {
-      const cellChar = characterGrid[row][col];
-      if (/[1-9]/.test(cellChar) && !visitedCuboidCells[row][col]) {
-        const cuboidHeight = cellChar;
-        const searchStack: Cell[] = [[row, col]];
-        visitedCuboidCells[row][col] = true;
-        const cuboidCells: Cell[] = [];
-        let minRow = row,
-          maxRow = row,
-          minCol = col,
-          maxCol = col;
-
-        while (searchStack.length) {
-          const [currentRow, currentCol] = searchStack.pop()!;
-          cuboidCells.push([currentRow, currentCol]);
-          minRow = Math.min(minRow, currentRow);
-          maxRow = Math.max(maxRow, currentRow);
-          minCol = Math.min(minCol, currentCol);
-          maxCol = Math.max(maxCol, currentCol);
-
-          const neighborDeltas: Cell[] = [
-            [1, 0],
-            [-1, 0],
-            [0, 1],
-            [0, -1],
-          ];
-          for (const [deltaRow, deltaCol] of neighborDeltas) {
-            const neighborRow = currentRow + deltaRow;
-            const neighborCol = currentCol + deltaCol;
-            if (
-              isWithinGridBounds(neighborRow, neighborCol) &&
-              !visitedCuboidCells[neighborRow][neighborCol] &&
-              characterGrid[neighborRow][neighborCol] === cuboidHeight
-            ) {
-              visitedCuboidCells[neighborRow][neighborCol] = true;
-              searchStack.push([neighborRow, neighborCol]);
-            }
-          }
-        }
-
-        const cuboidWidth = maxCol - minCol + 1;
-        const cuboidDepth = maxRow - minRow + 1;
-        const cuboidHeight3D = Number(cuboidHeight);
-
-        const cuboidFootprintCells: Cell[] = [];
-        for (let footprintRow = minRow; footprintRow <= maxRow; footprintRow++) {
-          for (let footprintCol = minCol; footprintCol <= maxCol; footprintCol++) {
-            cuboidFootprintCells.push([footprintRow, footprintCol]);
-          }
-        }
-
-        const cuboidId = cuboidList.length + 1;
-        cuboidList.push({
-          id: cuboidId,
-          position: { row: minRow, col: minCol },
-          dimensions: [cuboidWidth, cuboidDepth, cuboidHeight3D],
-          cells: cuboidFootprintCells,
-        });
-      }
-    }
-  }
-
-  const visitedGoalCells = Array.from({ length: gridHeight }, () => Array(gridWidth).fill(false));
-  const goalAreas: GoalArea[] = [];
-
-  for (let row = 0; row < gridHeight; row++) {
-    for (let col = 0; col < gridWidth; col++) {
-      if (characterGrid[row][col] === 'g' && !visitedGoalCells[row][col]) {
-        const goalSearchStack: Cell[] = [[row, col]];
-        visitedGoalCells[row][col] = true;
-        const goalCellComponents: Cell[] = [];
-        let minRow = row,
-          maxRow = row,
-          minCol = col,
-          maxCol = col;
-
-        while (goalSearchStack.length) {
-          const [currentRow, currentCol] = goalSearchStack.pop()!;
-          goalCellComponents.push([currentRow, currentCol]);
-          minRow = Math.min(minRow, currentRow);
-          maxRow = Math.max(maxRow, currentRow);
-          minCol = Math.min(minCol, currentCol);
-          maxCol = Math.max(maxCol, currentCol);
-
-          const neighborDeltas: Cell[] = [
-            [1, 0],
-            [-1, 0],
-            [0, 1],
-            [0, -1],
-          ];
-          for (const [deltaRow, deltaCol] of neighborDeltas) {
-            const neighborRow = currentRow + deltaRow;
-            const neighborCol = currentCol + deltaCol;
-            if (
-              isWithinGridBounds(neighborRow, neighborCol) &&
-              !visitedGoalCells[neighborRow][neighborCol] &&
-              characterGrid[neighborRow][neighborCol] === 'g'
-            ) {
-              visitedGoalCells[neighborRow][neighborCol] = true;
-              goalSearchStack.push([neighborRow, neighborCol]);
-            }
-          }
-        }
-
-        const goalWidth = maxCol - minCol + 1;
-        const goalHeight = maxRow - minRow + 1;
-        const goalCellsSet = new Set(goalCellComponents.map(([a, b]) => `${a},${b}`));
-        goalAreas.push({
-          id: goalAreas.length + 1,
-          topLeft: [minRow, minCol],
-          width: goalWidth,
-          height: goalHeight,
-          cellsSet: goalCellsSet,
-        });
-      }
-    }
-  }
-
-  let initialGameState = new GameState(
-    cuboidList.map((cuboid) => new Cuboid(cuboid.id, cuboid.position, cuboid.dimensions, cuboid.cells)),
-    new Set(originalSpecialTileCoords),
-    goalAreas,
-    characterGrid,
-  );
-
-  for (const cuboid of initialGameState.cuboids) {
-    const coveredCells = initialGameState.convertCellsToCoordinateSet(cuboid.cells);
-    for (const specialCoord of [...initialGameState.remainingSpecialTiles]) {
-      if (coveredCells.has(specialCoord)) {
-        initialGameState.remainingSpecialTiles.delete(specialCoord);
-      }
-    }
-  }
-
-  function compressActionSequence(actionList: string[], cuboidCount: number): string[] {
-    if (actionList.length === 0) return [];
-
-    const compressedActions: string[] = [];
-    let currentAction = actionList[0];
-    let actionCount = 1;
-
-    const showCuboidId = cuboidCount > 1;
-
-    for (let i = 1; i < actionList.length; i++) {
-      if (actionList[i] === currentAction) {
-        actionCount++;
-      } else {
-        const displayAction = showCuboidId ? currentAction : currentAction.replace(/^C\d+ /, '');
-        compressedActions.push(actionCount === 1 ? displayAction : `${displayAction} ${actionCount} times`);
-        currentAction = actionList[i];
-        actionCount = 1;
-      }
-    }
-
-    const displayAction = showCuboidId ? currentAction : currentAction.replace(/^C\d+ /, '');
-    compressedActions.push(actionCount === 1 ? displayAction : `${displayAction} ${actionCount} times`);
-    return compressedActions;
-  }
-
-  function solvePuzzle(): SolveResult {
-    const startTime = performance.now();
-    const startingState = initialGameState;
-    const cuboidCount = startingState.cuboids.length;
-    const searchQueue: PathNode[][] = [[{ state: startingState, action: null }]];
-    const visitedStates = new Set([startingState.serialize()]);
-
-    while (searchQueue.length > 0) {
-      const currentPath = searchQueue.shift()!;
-      const currentPathNode = currentPath[currentPath.length - 1];
-      const currentState = currentPathNode.state;
-
-      if (currentState.isGoal()) {
-        const solutionActions = currentPath.slice(1).map((pathNode) => pathNode.action!);
-        const endTime = performance.now();
-        return {
-          solution: compressActionSequence(solutionActions, cuboidCount),
-          statesExplored: visitedStates.size,
-          time: endTime - startTime,
-        };
-      }
-
-      const neighborStates = currentState.generateNeighborStates();
-      for (const neighborState of neighborStates) {
-        const stateKey = neighborState.state.serialize();
-        if (!visitedStates.has(stateKey)) {
-          visitedStates.add(stateKey);
-          searchQueue.push([...currentPath, neighborState]);
-        }
-      }
-    }
-
-    const endTime = performance.now();
-    return {
-      solution: null,
-      statesExplored: visitedStates.size,
-      time: endTime - startTime,
-    };
-  }
-
-  const result = solvePuzzle();
-
-  if (result.solution) {
-    return {
-      success: true,
-      solution: result.solution.join(' -> '),
-      steps: result.solution.length,
-      statesExplored: result.statesExplored,
-      time: result.time,
-    };
-  } else {
-    return {
-      success: false,
-      statesExplored: result.statesExplored,
-      time: result.time,
-    };
-  }
+  return {
+    success: false,
+  };
 }

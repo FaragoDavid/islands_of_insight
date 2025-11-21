@@ -42,6 +42,16 @@ export class GameState {
         }
       }
     }
+
+    // Remove special tiles that are already covered by cuboids at initialization
+    for (const cuboid of this.cuboids) {
+      const coveredCells = this.convertCellsToCoordinateSet(cuboid.cells);
+      for (const specialCoord of [...this.remainingSpecialTiles]) {
+        if (coveredCells.has(specialCoord)) {
+          this.remainingSpecialTiles.delete(specialCoord);
+        }
+      }
+    }
   }
 
   serialize(): string {
