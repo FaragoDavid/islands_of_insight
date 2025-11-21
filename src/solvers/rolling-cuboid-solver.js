@@ -167,6 +167,7 @@ export function solveCuboidPuzzle(gridInput) {
     if (!isWithinGridBounds(row, col)) return false;
     const cellCharacter = characterGrid[row][col];
     if (cellCharacter === 'x') return false;
+    if (cellCharacter === ' ') return false;
 
     const coordinateKey = `${row},${col}`;
     if (originalSpecialTileCoords.has(coordinateKey) && !remainingSpecialTiles.has(coordinateKey)) {
@@ -285,46 +286,37 @@ export function solveCuboidPuzzle(gridInput) {
 
     if (goalAreas.length === 0) return true;
 
-    const cuboidOccupiedCells = gameState.cuboids.map((cuboid) => convertCellsToCoordinateSet(cuboid.cells));
-    const numCuboids = gameState.cuboids.length;
-
-    if (goalAreas.length < numCuboids) return false;
-
-    const bipartiteEdges = Array.from({ length: numCuboids }, () => []);
-    for (let cuboidIndex = 0; cuboidIndex < numCuboids; cuboidIndex++) {
-      for (let goalIndex = 0; goalIndex < goalAreas.length; goalIndex++) {
-        if (cuboidOccupiedCells[cuboidIndex].size !== goalAreas[goalIndex].cellsSet.size) continue;
-
-        let setsAreEqual = true;
-        for (const coordinateKey of goalAreas[goalIndex].cellsSet) {
-          if (!cuboidOccupiedCells[cuboidIndex].has(coordinateKey)) {
-            setsAreEqual = false;
-            break;
-          }
-        }
-        if (setsAreEqual) bipartiteEdges[cuboidIndex].push(goalIndex);
+    // Collect all goal cells into a single set
+    const allGoalCells = new Set();
+    for (const goalArea of goalAreas) {
+      for (const cell of goalArea.cellsSet) {
+        allGoalCells.add(cell);
       }
     }
 
-    const goalMatches = Array(goalAreas.length).fill(-1);
-    function findAugmentingPath(cuboidIndex, visitedGoals) {
-      for (const goalIndex of bipartiteEdges[cuboidIndex]) {
-        if (visitedGoals[goalIndex]) continue;
-        visitedGoals[goalIndex] = true;
-        if (goalMatches[goalIndex] === -1 || findAugmentingPath(goalMatches[goalIndex], visitedGoals)) {
-          goalMatches[goalIndex] = cuboidIndex;
-          return true;
-        }
+    // Collect all cells covered by all cuboids
+    const allCuboidCells = new Set();
+    for (const cuboid of gameState.cuboids) {
+      for (const cell of cuboid.cells) {
+        allCuboidCells.add(`${cell[0]},${cell[1]}`);
       }
-      return false;
     }
 
-    let matchingSize = 0;
-    for (let cuboidIndex = 0; cuboidIndex < numCuboids; cuboidIndex++) {
-      const visitedGoals = Array(goalAreas.length).fill(false);
-      if (findAugmentingPath(cuboidIndex, visitedGoals)) matchingSize++;
+    // Check if all goal cells are covered
+    for (const goalCell of allGoalCells) {
+      if (!allCuboidCells.has(goalCell)) {
+        return false;
+      }
     }
-    return matchingSize === numCuboids;
+
+    // Check if any non-goal cells are covered
+    for (const cuboidCell of allCuboidCells) {
+      if (!allGoalCells.has(cuboidCell)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   function compressActionSequence(actionList, cuboidCount) {

@@ -90,9 +90,9 @@ export function solveCuboidPuzzleUI() {
     return;
   }
 
-  if (!/^[1-9hxg\s\n]+$/.test(input)) {
+  if (!/^[1-9hxg\-\n]+$/.test(input)) {
     output.innerHTML =
-      '<div class="bg-washed-yellow dark-red pa3 br2 mv2">Grid must only contain digits 1-9, h, x, g, spaces, and newlines</div>';
+      '<div class="bg-washed-yellow dark-red pa3 br2 mv2">Grid must only contain digits 1-9, h, x, g, dashes (-), and newlines</div>';
     return;
   }
 
